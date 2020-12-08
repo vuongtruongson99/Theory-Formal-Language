@@ -5,6 +5,7 @@
 #include <stack>
 #include <string>
 #include <iomanip>
+#include <queue>
 #include <algorithm>
 using namespace std;
 
@@ -201,6 +202,31 @@ void get_state(vector<DFA_LR>& LR_state, AugumentedGrammar& grammar, int state, 
 	}
 }
 
+
+string PrintStack(stack<int> s) {
+	string tmp = "";
+	while (!s.empty()) {
+		int x = s.top();
+		s.pop();
+		tmp += to_string(x);
+		tmp += " ";
+	}
+	reverse(tmp.begin(), tmp.end());
+	return tmp;
+}
+
+string PrintStack(stack<char> s) {
+	string tmp = "";
+	while (!s.empty()) {
+		char x = s.top();
+		s.pop();
+		tmp += string(1, x);
+		tmp += " ";
+	}
+	reverse(tmp.begin(), tmp.end());
+	return tmp;
+}
+
 int main() {
 	int no_state = -1;
 	AugumentedGrammar grammar;
@@ -323,18 +349,46 @@ int main() {
 
 		stack<int> SS;	// stack of state 
 		stack<char> SC; // stack of symbol
+		SS.push(1);		// push first state
 
-		SS.push(0);		// push first state
 
+		cout << setw(10) << "No |" << setw(20) << "Action |" << setw(20) << "SS |" << setw(20) << "SC  |" << setw(20) << "Input" << endl;
+		int count = 1;
+		//nt index_input = 1;
 		int i = 0;
 		char lookahead = syntax[i];
 		SC.push(lookahead);
 		bool check = false;
+
+		cout << setw(8) << count << " |" << setw(20) << "_ 1 |" << setw(18) << 1  << " |" << setw(18) << lookahead << " |";
+		cout << "\t";
+		for (int z = i + 1; z < syntax.length(); ++z) {
+			cout << syntax[z];
+		}
+		cout << endl;
+		count++;
+
 		while (1) {
-			int st = SS.top();
+			int st = SS.top() - 1;
 
 			if (lookahead == '$') {
 				if (state[st].gotos['$']) {
+					AugumentedProduction* p = state[st][0];
+					int len_rhs = p->rhs.length() - 1;
+					for (int j = 0; j < len_rhs; ++j) {
+						SC.pop();
+					}
+					for (int j = 0; j < len_rhs - 1; ++j) {
+						SS.pop();
+					}
+					SC.push(p->lhs);
+					cout << setw(8) << count++ << " |" << setw(14) << st + 1 << "($)" << state[st].gotos['$'] + 1 << " |";
+					cout << setw(18) << PrintStack(SS) << " |" << setw(18) << PrintStack(SC) << " |";
+					cout << "\t";
+					for (int z = i + 1; z < syntax.length(); ++z) {
+						cout << syntax[z];
+					}
+					cout << endl;
 					check = true;
 					break;
 				}
@@ -350,7 +404,6 @@ int main() {
 				if (it->first == lookahead) {
 					find = true;
 					
-					// Nếu là reduce
 					if (state[it->second].final_state) {
 						// Find final production
 						int pos_fProduct = 0;
@@ -363,14 +416,23 @@ int main() {
 								break;
 							}
 						}
+
 						// Neu la half state
 						if (state[it->second].half_state) {
 							char tmp_lookahead = syntax[i + 1];
 							// Shift
 							if (state[it->second].gotos[tmp_lookahead]) {
+								char tmp_look = lookahead;
 								lookahead = syntax[++i];
 								SC.push(lookahead);
-								SS.push(it->second);
+								SS.push(it->second + 1);
+								cout << setw(8) << count++ << " |" << setw(14) << st + 1 << "(" << tmp_look << ")" << it->second + 1 << " |";
+								cout << setw(18) << PrintStack(SS) << " |" << setw(18) << PrintStack(SC) << " |";
+								cout << "\t";
+								for (int z = i + 1; z < syntax.length(); ++z) {
+									cout << syntax[z];
+								}
+								cout << endl;
 							}
 							// Reduce
 							else {
@@ -383,7 +445,14 @@ int main() {
 									SS.pop();
 								}
 								SC.push(p->lhs);
-								lookahead = p->lhs;
+								cout << setw(8) << count++ << " |" << setw(14) << st + 1<< "(" << lookahead << ")" << it->second + 1<< " |";
+								cout << setw(18) << PrintStack(SS) << " |" << setw(18) << PrintStack(SC) << " |";
+								cout << "\t";
+								for (int z = i + 1; z < syntax.length(); ++z) {
+									cout << syntax[z];
+								}
+								cout << endl;
+								lookahead = p->lhs;								
 							}
 						}
 						else {
@@ -396,14 +465,30 @@ int main() {
 								SS.pop();
 							}
 							SC.push(p->lhs);
+							
+							cout << setw(8) << count++ << " |" << setw(14) << st + 1<< "(" << lookahead << ")" << it->second + 1 << " |";
+							cout << setw(18) << PrintStack(SS) << " |" << setw(18) << PrintStack(SC) << " |";
+							cout << "\t";
+							for (int z = i + 1; z < syntax.length(); ++z) {
+								cout << syntax[z];
+							}
+							cout << endl;
 							lookahead = p->lhs;
 						}
 					}
 					// Nếu là shift
 					else {
+						char tmp_lookahead = lookahead;
 						lookahead = syntax[++i];
 						SC.push(lookahead);
-						SS.push(it->second);
+						SS.push(it->second + 1);
+						cout << setw(8) << count++ << " |" << setw(14) << st + 1 << "(" << tmp_lookahead << ")" << it->second + 1 << " |";
+						cout << setw(18) << PrintStack(SS) << " |" << setw(18) << PrintStack(SC) << " |";
+						cout << "\t";
+						for (int z = i + 1; z < syntax.length(); ++z) {
+							cout << syntax[z];
+						}
+						cout << endl;
 					}
 				}
 			}

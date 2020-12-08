@@ -146,6 +146,14 @@ int precedence(string x) {
 	}
 }
 
+int countToken(string s) {
+	int cnt = 0;
+	for (int i = 0; i < s.length(); ++i) {
+		if (s[i] == ' ') cnt++;
+	}
+	return cnt;
+}
+
 string ParseUnary(string infix) {
 	string new_infix = infix;
 	new_infix.erase(remove(new_infix.begin(), new_infix.end(), ' '), new_infix.end());
@@ -277,9 +285,11 @@ string ParseLoop(string infix) {
 		first_expression_length = pos1[0] - tmp_inf.find("'") - 1;
 		new_inf += "!";
 		new_inf += tmp_inf.substr(pos1[0] + 1, pos1[1] - pos1[0] - 1);
-		new_inf += tmp_inf.substr(pos2[0] + 1);
-		new_inf += ",";
+		new_inf += ":";
 		new_inf += tmp_inf.substr(pos1[1] + 1, pos2[0] - pos1[1] - 1);
+		new_inf += ",";
+		new_inf += tmp_inf.substr(pos2[0] + 2);
+		
 		return new_inf;
 	}
 
@@ -372,7 +382,7 @@ string infix_to_postfix(string infix) {
 
 			int point_tran = point_trans.back();
 			point_trans.pop_back();
-			conditional_tran.push_back(make_pair(point_tran, out.length()));
+			conditional_tran.push_back(make_pair(point_tran, countToken(out) + 1));
 			unconditional_tran.push_back(cnt);
 
 			st.push("_");
@@ -394,7 +404,7 @@ string infix_to_postfix(string infix) {
 			unconditional_tran.push_back(cnt);
 			int point_tran = point_trans.back();
 			point_trans.pop_back();
-			conditional_tran.push_back(make_pair(point_tran, out.length()));
+			conditional_tran.push_back(make_pair(point_tran, countToken(out) + 1));
 			cnt++;
 		}
 		else if (isBoolDoubleOperator(infix[i], infix[i + 1])) {
@@ -504,7 +514,7 @@ string infix_to_postfix(string infix) {
 			conditional_tran.push_back(make_pair(cnt, first_expression_length));
 			int point_tran = point_trans.back();
 			point_trans.pop_back();
-			conditional_tran.push_back(make_pair(point_tran, out.length()));
+			conditional_tran.push_back(make_pair(point_tran, countToken(out) + 1));
 		}
 		else {
 			string c = st.top();
@@ -513,7 +523,7 @@ string infix_to_postfix(string infix) {
 			out += c;
 		}
 	}
-	out_length = out.length();
+	out_length = countToken(out) + 1;
 	return out;
 }
 

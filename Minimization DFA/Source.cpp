@@ -47,7 +47,8 @@ void print_minDfa(bool printed[]) {
 	cout << "\n Minimised DFA Table:\n";
 	cout << "---------------------\n";
 	cout << "State\t";
-	for (int j = 0; j < m; j++) cout << char(j + 'a') << "\t"; cout << endl << endl;
+	for (int j = 0; j < m; j++) cout << char(j + 'a') << "\t";
+	cout << "Final\t" << endl;
 
 	for (int i = 0; i < n; ++i) {
 		if (printed[i]) continue;
@@ -67,6 +68,26 @@ void print_minDfa(bool printed[]) {
 			}
 			cout << "]\t";
 		}
+
+		bool check_final = false;
+		ind = idx(i);
+		for (int k = 0; k < equalClass[0][ind].size(); ++k) {
+			for (int j = 0; j < nfs; ++j) {
+				if (finalState[equalClass[0][ind][k]] == 1) {
+					check_final = true;
+					break;
+				}
+			}
+		}
+
+		if (check_final) {
+			cout << 1;
+		}
+		else {
+			cout << 0;
+		}
+		
+
 		cout << endl;
 	}
 	cout << endl;
